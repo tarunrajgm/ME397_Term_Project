@@ -114,7 +114,7 @@ def main():
         model.load_model("models/XGBR_Can_Veh.json")
         y_pred = model.predict(df_new)
 
-    elif measure == "personal vehicles" and border == "us-mexico broder":
+    elif measure == "personal vehicles" and border == "us-mexico border":
         df_new = pd.DataFrame(scale(df_new, axis=1, with_std=False))
         model.load_model("models/XGBR_Mex_Veh.json")
         y_pred = model.predict(df_new)
