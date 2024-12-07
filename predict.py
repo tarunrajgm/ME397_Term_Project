@@ -163,7 +163,7 @@ def main():
     plt.legend()
 
     # Save the plot
-    plt.savefig('Regression Forcast.png')
+    plt.savefig('Regression Forecast.png')
 
 
 if __name__ == "__main__":
