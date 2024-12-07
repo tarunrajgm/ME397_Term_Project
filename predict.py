@@ -6,6 +6,7 @@ import requests
 import matplotlib.pyplot as plt
 import io
 import numpy as np
+import warnings
 import os
 from train_models import train
 import sys
@@ -105,7 +106,9 @@ def main():
 
     # print(measure, border)
     if measure == 'pedestrians':
-        df_new = pd.DataFrame(scale(df_new, with_std=True))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            df_new = pd.DataFrame(scale(df_new, with_std=True))
         model.load_model("models/XGBR_Mex_Ped.json")
         y_pred = model.predict(df_new)
 
