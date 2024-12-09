@@ -12,30 +12,25 @@ import branca
 
 
 def main():
-    # Download the CSV using requests
     url = "https://data.transportation.gov/api/views/keg4-3bc2/rows.csv?accessType=DOWNLOAD"
     response = requests.get(url)
-
-    # Load the CSV content into a pandas DataFrame
     data = pd.read_csv(io.StringIO(response.text))
 
-    # Convert the 'Point' column into geometry
+    # convert the 'Point' into geometry
     data['geometry'] = data['Point'].apply(loads)
 
-    # Create a GeoDataFrame
     gdf = gpd.GeoDataFrame(data, geometry='geometry', crs="EPSG:4326")
 
     gdf.drop(columns=['Point'], inplace=True)
 
-    # Convert date column to datetime format
+
     gdf['Date'] = pd.to_datetime(gdf['Date'], format='%b %Y')
-    # Create new columns
     gdf['month'] = gdf['Date'].dt.month
     gdf['year'] = gdf['Date'].dt.year
 
     gdf = gdf[gdf['State'] != 'Alaska']
 
-    # Apply filtering and create a copy for the filtered data
+    # apply filtering and create a copy for the filtered data
     filtered_data_copy = gdf.copy()
 
     filtered_data_copy = filtered_data_copy[
@@ -53,14 +48,14 @@ def main():
         .head(30)
     )
 
-    # Join back with filtered data copy to restrict to top ports
+    # join back with filtered data copy to restrict to top ports
     filtered_data_copy = filtered_data_copy.merge(
         top_ports[["year", "month", "Port Name"]],
         on=["year", "month", "Port Name"],
         how="inner"
     )
 
-    # Prepare heatmap data for each measure (grouped by year-month)
+    # Prepare heatmap data for each measure 
     heatmap_data = {}
     for measure in ["Pedestrians", "Personal Vehicles", "Trucks"]:
         measure_data = filtered_data_copy[filtered_data_copy["Measure"] == measure]
@@ -73,7 +68,7 @@ def main():
                 measure_data[["year", "month"]].drop_duplicates().itertuples(index=False)
             )
         ]
-        # Update the labels for the slider to include months
+        # labels for the slider include months
         heatmap_data[measure + "_labels"] = [
             f"{year}-{month:02d} ({measure})"
             for year, month in sorted(
@@ -81,12 +76,12 @@ def main():
             )
         ]
 
-    # Normalize the heatmap data
+    # normalize 
     normalized_heatmap_data = {}
     scaler = MinMaxScaler()
 
     for measure, data in heatmap_data.items():
-        if measure.endswith("_labels"):  # Skip the labels
+        if measure.endswith("_labels"):  
             continue
         normalized_data_slices = []
         for slice_data in data:
@@ -107,10 +102,7 @@ def main():
     # Calculate relative breakpoints for each measure based on monthly percentiles
     measure_breaks = {}
     for measure in ["Pedestrians", "Personal Vehicles", "Trucks"]:
-        # Group by year and month
         grouped_data = filtered_data_copy[filtered_data_copy["Measure"] == measure].groupby(["year", "month"])["Value"]
-        
-        # Temporary storage for monthly breakpoints
         monthly_breaks = []
 
         for (year, month), values in grouped_data:
@@ -124,7 +116,7 @@ def main():
             ])
 
         monthly_breaks_array = np.array(monthly_breaks)
-        averaged_breaks = np.mean(monthly_breaks_array, axis=0)  # Average along rows
+        averaged_breaks = np.mean(monthly_breaks_array, axis=0)  
         
         # nearest 1000
         measure_breaks[measure] = [round(avg / 1000) * 1000 for avg in averaged_breaks]
@@ -169,7 +161,7 @@ def main():
 
 # Function to add legends with stacked positioning in the top-left corner
 def add_measure_legend(map_object, measure, breaks, colors, offset_index):
-    vertical_offset = 10 + offset_index * 120  # Adjust vertical offset to avoid overlap
+    vertical_offset = 10 + offset_index * 120  
     legend_html = f"""
     <div style="
         position: fixed;
