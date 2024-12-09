@@ -14,16 +14,11 @@ def train(df=None):
         os.makedirs("models")
 
     if df is None:
-        # Download the CSV using requests
         url = "https://data.transportation.gov/api/views/keg4-3bc2/rows.csv?accessType=DOWNLOAD"
         response = requests.get(url)
-
-        # Load the CSV content into a pandas DataFrame
         df = pd.read_csv(io.StringIO(response.text))
 
         df['Date'] = pd.to_datetime(df['Date'], format='%b %Y')
-
-        # Create new columns
         df['month'] = df['Date'].dt.month
         df['year'] = df['Date'].dt.year
 
@@ -64,10 +59,8 @@ def train(df=None):
 
     print(f"Percentage Error Mexico Pedestrians Model: {mae/mean*100:.2f}%")
 
-    # Specify the path to save the model
+    # path to save the model
     save_path = "models/XGBR_Mex_Ped.json"
-
-    # Save the model
     XGBR_Mex_Ped.save_model(save_path)
 
 
